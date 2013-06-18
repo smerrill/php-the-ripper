@@ -4,7 +4,7 @@ require 'fileutils'
 # Let's download some PHP packages.
 
 # Change these as needed.
-version = "5.3.26"
+version = "5.4.16"
 arch = "x86_64"
 format_string = "/pub/ius/stable/Redhat/6/%s/%s-%s-1.ius.el6.%s.rpm"
 
@@ -30,17 +30,17 @@ def check_package (url)
 end
 
 packages = [
-  "php53u-cli",
-  "php53u-mbstring",
-  "php53u-devel",
-  "php53u",
-  "php53u-gd",
-  "php53u-soap",
-  "php53u-xml",
-  "php53u-pdo",
-  "php53u-mysql",
-  "php53u-process",
-  "php53u-common"
+  "php54-cli",
+  "php54-mbstring",
+  "php54-devel",
+  "php54",
+  "php54-gd",
+  "php54-soap",
+  "php54-xml",
+  "php54-pdo",
+  "php54-mysql",
+  "php54-process",
+  "php54-common"
 ]
 
 package_urls = packages.map { |p| format_string % [arch, p, version, arch] }.select { |p| check_package(p) }
@@ -48,6 +48,7 @@ package_urls = packages.map { |p| format_string % [arch, p, version, arch] }.sel
 # Download the packages that are not 404s.
 Dir.chdir(download_directory)
 package_urls.each { |url|
+  puts "Downloading #{url}."
   system("wget http://dl.iuscommunity.org%s" % url)
 }
 
