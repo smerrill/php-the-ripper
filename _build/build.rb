@@ -49,6 +49,7 @@ package_urls = package_urls.map { |url| 'http://dl.iuscommunity.org%s' % url }
 
 # Add extra packages that we have to have in the tarball.
 package_urls.concat [
+  'http://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/php54-pear-1.9.4-2.ius.el6.noarch.rpm',
   'http://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/php54-pecl-mongo-1.3.2-1.ius.el6.x86_64.rpm',
   'http://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/php54-pecl-apc-3.1.13-1.ius.el6.x86_64.rpm',
   'http://mirrors.rit.edu/centos/6.4/os/x86_64/Packages/t1lib-5.1.2-6.el6_2.1.x86_64.rpm',
