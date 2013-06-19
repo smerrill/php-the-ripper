@@ -44,17 +44,23 @@ packages = [
 ]
 
 package_urls = packages.map { |p| format_string % [arch, p, version, arch] }.select { |p| check_package(p) }
+package_urls = package_urls.map { |url| "http://dl.iuscommunity.org%s" % url }
+
+# Add extra packages that we have to have in the tarball.
+package_urls << [
+  "http://mirrors.rit.edu/centos/6.4/os/x86_64/Packages/t1lib-5.1.2-6.el6_2.1.x86_64.rpm",
+]
 
 # Download the packages that are not 404s.
 Dir.chdir(download_directory)
 package_urls.each { |url|
   puts "Downloading #{url}."
-  system("wget http://dl.iuscommunity.org%s" % url)
+  system("wget %s" % url)
 }
 
 # We have to chdir here, since cpio wants us to be in the directory where we will expand things.
 Dir.chdir(extract_directory)
-package_urls.each { |file|
+Dir.glob('../*/*.rpm').each { |file|
   rpm_path = download_directory + "/" + file.split("/").last
   system("rpm2cpio %s | cpio -idv" % rpm_path)
 }
