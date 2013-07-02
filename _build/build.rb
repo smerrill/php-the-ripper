@@ -4,15 +4,15 @@ require 'fileutils'
 # Let's download some PHP packages.
 
 # Change these as needed.
-version = "5.4.16"
+version = "5.4.16-1"
 arch = "x86_64"
-format_string = "/pub/ius/stable/Redhat/6/%s/%s-%s-1.ius.el6.%s.rpm"
+format_string = "/pub/ius/stable/Redhat/6/%s/%s-%s.ius.el6.%s.rpm"
 
 # Set up the directories needed.
 script_path = File.expand_path(File.dirname(__FILE__))
 download_directory = script_path + "/rpm-download"
-php_extract_directory = script_path + "/usr/php/#{version}"
-mod_fastcgi_extract_directory = script_path + "/usr/mod_fastcgi/2.4.6"
+php_extract_directory = script_path + "/php/usr/php/#{version}"
+mod_fastcgi_extract_directory = script_path + "/mod_fastcgi/usr/mod_fastcgi/2.4.6-2"
 [download_directory, php_extract_directory, mod_fastcgi_extract_directory]. each { |dir|
   FileUtils.rm_rf(dir) if File.directory?(dir)
   FileUtils.mkdir_p(dir) unless File.directory?(dir)
@@ -74,6 +74,8 @@ Dir.glob('%s/*.rpm' % download_directory).each { |file|
 # Now, some OpenShifty cleanup.
 # For one, we want the PHP cartridge's php.ini to win.
 FileUtils.rm('%s/etc/php.ini' % php_extract_directory)
+# We also don't currently need a thread-safe PHP.
+Dir.glob('./**/*zts*').each { |f| FileUtils.rm_rf(f) }
 
 # Next, grab mod_fastcgi by itself.
 Dir.chdir(download_directory)
@@ -86,3 +88,12 @@ Dir.glob('%s/*.rpm' % download_directory).each { |file|
   system('rpm2cpio %s | cpio -idv' % rpm_path)
   FileUtils.rm(rpm_path)
 }
+
+# Now, make the two .tgz files.
+Dir.chdir(script_path)
+system("tar czf php-#{version}.tgz php")
+system("tar czf mod_fastcgi-2.4.6-2.tgz mod_fastcgi")
+
+# And finally kill the download dirs.
+FileUtils.rm_rf(php_extract_directory)
+FileUtils.rm_rf(mod_fastcgi_extract_directory)
