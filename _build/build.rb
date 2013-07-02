@@ -11,10 +11,11 @@ format_string = "/pub/ius/stable/Redhat/6/%s/%s-%s-1.ius.el6.%s.rpm"
 # Set up the directories needed.
 script_path = File.expand_path(File.dirname(__FILE__))
 download_directory = script_path + "/rpm-download"
-extract_directory = script_path + "/rpm-extract"
-[download_directory, extract_directory]. each { |dir|
+php_extract_directory = script_path + "/usr/php/#{version}"
+mod_fastcgi_extract_directory = script_path + "/usr/mod_fastcgi/2.4.6"
+[download_directory, php_extract_directory, mod_fastcgi_extract_directory]. each { |dir|
   FileUtils.rm_rf(dir) if File.directory?(dir)
-  FileUtils.mkdir(dir) unless File.directory?(dir)
+  FileUtils.mkdir_p(dir) unless File.directory?(dir)
 }
 
 # Clean out the directories.
@@ -53,7 +54,6 @@ package_urls.concat [
   'http://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/php54-pecl-mongo-1.3.2-1.ius.el6.x86_64.rpm',
   'http://dl.iuscommunity.org/pub/ius/stable/Redhat/6/x86_64/php54-pecl-apc-3.1.13-1.ius.el6.x86_64.rpm',
   'http://mirrors.rit.edu/centos/6.4/os/x86_64/Packages/t1lib-5.1.2-6.el6_2.1.x86_64.rpm',
-  'http://apt.sw.be/redhat/el6/en/x86_64/rpmforge/RPMS/mod_fastcgi-2.4.6-2.el6.rf.x86_64.rpm',
 ]
 
 # Download the packages that are not 404s.
@@ -64,12 +64,25 @@ package_urls.each { |url|
 }
 
 # We have to chdir here, since cpio wants us to be in the directory where we will expand things.
-Dir.chdir(extract_directory)
+Dir.chdir(php_extract_directory)
 Dir.glob('%s/*.rpm' % download_directory).each { |file|
   rpm_path = download_directory + '/' + file.split('/').last
   system('rpm2cpio %s | cpio -idv' % rpm_path)
+  FileUtils.rm(rpm_path)
 }
 
 # Now, some OpenShifty cleanup.
 # For one, we want the PHP cartridge's php.ini to win.
-FileUtils.rm('%s/etc/php.ini' % extract_directory)
+FileUtils.rm('%s/etc/php.ini' % php_extract_directory)
+
+# Next, grab mod_fastcgi by itself.
+Dir.chdir(download_directory)
+system('wget http://apt.sw.be/redhat/el6/en/x86_64/rpmforge/RPMS/mod_fastcgi-2.4.6-2.el6.rf.x86_64.rpm')
+Dir.chdir(mod_fastcgi_extract_directory)
+
+# Extract it.
+Dir.glob('%s/*.rpm' % download_directory).each { |file|
+  rpm_path = download_directory + '/' + file.split('/').last
+  system('rpm2cpio %s | cpio -idv' % rpm_path)
+  FileUtils.rm(rpm_path)
+}
